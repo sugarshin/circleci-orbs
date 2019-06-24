@@ -52,7 +52,7 @@ steps:
             at: << parameters.workspace-root >>
   - run:
       name: Authenticate with registry
-      command: echo "//registry.npmjs.org/:_authToken=${<<parameters.circle-token>>}" >> ~/.npmrc
+      command: echo "//registry.npmjs.org/:_authToken=${<< parameters.npm-token >>}" >> ~/.npmrc
   - run:
       name: Publish a npm module if version bumped up
       command: |
