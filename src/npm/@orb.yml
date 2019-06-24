@@ -1,0 +1,5 @@
+version: 2.1
+
+description: |
+  npm utilities. Source:
+  https://github.com/sugarshin/circleci-orbs

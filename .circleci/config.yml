@@ -1,0 +1,38 @@
+version: 2.1
+
+orbs:
+  orb-tools: circleci/orb-tools@8.27.1
+
+workflows:
+  lint_pack_publish-dev:
+    jobs:
+      - orb-tools/lint
+      - orb-tools/pack:
+          name: pack-npm
+          source-dir: src/npm
+          destination-orb-path: packed/npm/orb.yml
+          workspace-path: packed/npm/orb.yml
+          artifact-path: packed/npm/orb.yml
+          requires:
+            - orb-tools/lint
+      - orb-tools/publish-dev:
+          name: publish-dev-npm
+          orb-name: sugarshin/npm
+          orb-path: workspace/packed/npm/orb.yml
+          requires:
+            - pack-npm
+      - orb-tools/trigger-integration-workflow:
+          ssh-fingerprints: TBD
+          requires:
+            - publish-dev-npm
+          filters:
+            branches:
+              ignore: master
+      - orb-tools/trigger-integration-workflow:
+          ssh-fingerprints: TBD
+          tag: master
+          requires:
+            - publish-dev-npm
+          filters:
+            branches:
+              only: master

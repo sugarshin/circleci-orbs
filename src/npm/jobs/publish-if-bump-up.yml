@@ -1,0 +1,74 @@
+description: Publish a npm module if version bumped up.
+
+parameters:
+  executor:
+    description: executor to use for this job
+    type: executor
+    default: default
+  checkout:
+    description: >
+      Boolean for whether or not to checkout as a first step. Default is true.
+    type: boolean
+    default: true
+  attach-workspace:
+    description: >
+      Boolean for whether or not to attach to an existing workspace. Default
+      is false.
+    type: boolean
+    default: false
+  npm-token:
+    description: >
+      Your npm auth token, defaults to $NPM_AUTH_TOKEN
+    type: env_var_name
+    default: NPM_AUTH_TOKEN
+  persist-to-workspace:
+    description: >
+      Boolean for whether or not to persist to a workspace. Default
+      is false.
+    type: boolean
+    default: false
+  workspace-root:
+    description: >
+      Workspace root path that is either an absolute path or a path relative
+      to the working directory. Defaults to '~/repo'
+    type: string
+    default: ~/repo
+  flags:
+    description: Flags for `npm publish`
+    type: string
+    default: ""
+
+executor: << parameters.executor >>
+
+steps:
+  - when:
+      condition: << parameters.checkout >>
+      steps:
+        - checkout
+  - when:
+      condition: << parameters.attach-workspace >>
+      steps:
+        - attach_workspace:
+            at: << parameters.workspace-root >>
+  - run:
+      name: Authenticate with registry
+      command: echo "//registry.npmjs.org/:_authToken=${<<parameters.circle-token>>}" >> ~/.npmrc
+  - run:
+      name: Publish a npm module if version bumped up
+      command: |
+        readonly package_name=$(node -p "require('./package.json').name")
+        readonly version=$(node -p "require('./package.json').version")
+        readonly latest_published_version=$(npm v ${package_name} version 2>/dev/null || exit 0)
+
+        if [[ "$latest_published_version" = "$version" ]]; then
+          echo "${version} exists. It was skip publishing."
+        else
+          npm publish << parameters.flags >>
+        fi
+  - when:
+      condition: << parameters.persist-to-workspace >>
+      steps:
+        - persist_to_workspace:
+            root: << parameters.workspace-root >>
+            paths:
+              - .
