@@ -22,14 +22,14 @@ workflows:
           requires:
             - pack-npm
       - orb-tools/trigger-integration-workflow:
-          ssh-fingerprints: TBD
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
           requires:
             - publish-dev-npm
           filters:
             branches:
               ignore: master
       - orb-tools/trigger-integration-workflow:
-          ssh-fingerprints: TBD
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
           tag: master
           requires:
             - publish-dev-npm
