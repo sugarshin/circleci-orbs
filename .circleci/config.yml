@@ -27,12 +27,32 @@ workflows:
           requires:
             - publish-dev-npm
       - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-npm
+          name: dev-promote-prod-npm-patch
           orb-name: sugarshin/npm
-          release: patch # TODO
+          release: patch
           ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          requires:
-            - trigger-integration-workflow-npm
           filters:
             branches:
-              only: master
+              ignore: /.*/
+            tags:
+              only: /master-patch.*/
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-prod-npm-patch
+          orb-name: sugarshin/npm
+          release: minor
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-minor.*/
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-prod-npm-patch
+          orb-name: sugarshin/npm
+          release: major
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-major.*/
