@@ -22,17 +22,17 @@ workflows:
           requires:
             - pack-npm
       - orb-tools/trigger-integration-workflow:
+          name: trigger-integration-workflow-npm
           ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
           requires:
             - publish-dev-npm
-          filters:
-            branches:
-              ignore: master
-      - orb-tools/trigger-integration-workflow:
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-prod-npm
+          orb-name: sugarshin/npm
+          release: patch # TODO
           ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          tag: master
           requires:
-            - publish-dev-npm
+            - trigger-integration-workflow-npm
           filters:
             branches:
               only: master
