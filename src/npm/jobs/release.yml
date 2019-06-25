@@ -87,7 +87,7 @@ steps:
 
         readonly versions=$(npx semver ${latest_published_version} ${version})
         readonly first=$(echo ${versions} | cut -d ' ' -f 1)
-        if [[ "$first" = "$latest_published_version" ]]; then
+        if [[ "$version" != "$latest_published_version" ]] && [[ "$first" = "$latest_published_version" ]]; then
           npm publish << parameters.flags >>
 
           <<# parameters.tagging >>
