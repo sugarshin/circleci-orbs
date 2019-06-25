@@ -1,4 +1,4 @@
-description: Publish a npm module if version bumped up.
+description: Release a npm module. Publish to npm registry, tagging and create release on GitHub, if version bumped up.
 
 parameters:
   executor:
@@ -37,6 +37,20 @@ parameters:
     description: Flags for `npm publish`
     type: string
     default: ""
+  tagging:
+    description: >
+      Boolean for whether or not to tagging and push to GitHub. Default
+      is false.
+    type: boolean
+    default: false
+  ssh-fingerprints:
+    type: string
+    default: ""
+    description: >
+      Fingerprints for SSH deploy key (add the public key as a read/write
+      key on GitHub; add the private key in CircleCI via SSH Permissions,
+      with github.com as Hostname). Used to push a git tag back to the
+      project's repository.
 
 executor: << parameters.executor >>
 
@@ -53,17 +67,37 @@ steps:
   - run:
       name: Authenticate with registry
       command: echo "//registry.npmjs.org/:_authToken=${<< parameters.npm-token >>}" >> ~/.npmrc
+  - when:
+      condition: << parameters.tagging >>
+      steps:
+        - add_ssh_keys:
+            fingerprints:
+              - << parameters.ssh-fingerprints >>
   - run:
       name: Publish a npm module if version bumped up
       command: |
         readonly package_name=$(node -p "require('./package.json').name")
         readonly version=$(node -p "require('./package.json').version")
-        readonly latest_published_version=$(npm v ${package_name} version 2>/dev/null || exit 0)
+        readonly latest_published_version=$(npm v ${package_name} version 2>/dev/null)
 
-        if [[ "$latest_published_version" = "$version" ]]; then
-          echo "${version} exists. It was skip publishing."
-        else
+        if [[ $(npx semver ${version}) == "" ]]; then
+          echo "`version` in package.json is not semver."
+          exit 0
+        fi
+
+        if [[ versions=$(npx ${latest_published_version} ${version}); first=$(echo ${versions} | cut -d ' ' -f 1); "$first" = "$latest_published_version" ]]; then
           npm publish << parameters.flags >>
+
+          <<# parameters.tagging >>
+          git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
+          git config --global user.name "$CIRCLE_USERNAME"
+
+          readonly tag="v${version}"
+          git tag -a "${tag}" -m "Release ${tag}"
+          git push origin "$tag"
+          <</ parameters.tagging >>
+        else
+          echo "${version} exists. It was skip publishing."
         fi
   - when:
       condition: << parameters.persist-to-workspace >>
