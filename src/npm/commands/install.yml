@@ -1,0 +1,41 @@
+description: >
+  Install npm modules
+
+parameters:
+  restore-cache:
+    description: "restore_cache"
+    type: boolean
+    default: true
+  production:
+    description: "with --production"
+    type: boolean
+    default: false
+  save-cache:
+    description: "save_cache"
+    type: boolean
+    default: true
+  cache-checksum:
+    description: "cache checksum"
+    type: string
+    default: "package-lock.json"
+
+steps:
+  - when:
+      condition: << parameters.restore-cache >>
+      steps:
+        - restore_cache:
+            name: Restore npm cache
+            keys:
+              - npm-cache-{{ checksum "<< parameters.cache-checksum >>" }}
+              - npm-cache-
+  - run:
+      name: Install npm modules
+      command: npm ci <<# parameters.production >>--production<</ parameters.production >>
+  - when:
+      condition: << parameters.save-cache >>
+      steps:
+        - save_cache:
+            name: Save npm cache
+            key: npm-cache-{{ checksum "<< parameters.cache-checksum >>" }}
+            paths:
+              - ~/.npm

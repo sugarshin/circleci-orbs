@@ -1,0 +1,27 @@
+description: >
+  Example using for release
+usage:
+  version: 2.1
+
+  orbs:
+    npm: sugarshin/npm@x.y.z
+
+  executors:
+    nodejs:
+      docker:
+        - image: circleci/node:12.4.0
+
+  workflows:
+    test_build_publish:
+      jobs:
+        - test
+        - build
+        - npm/release:
+            executor: nodejs
+            attach-workspace: true
+            flags: --access=public
+            tagging: true
+            ssh-fingerprints: ff:22:gs:v6:gg:2g:22:7j:73:gf:ja:36:ff:y2:22:89
+            requires:
+              - test
+              - build
