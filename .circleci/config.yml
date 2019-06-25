@@ -37,7 +37,7 @@ workflows:
             tags:
               only: /master-patch.*/
       - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-npm-patch
+          name: dev-promote-prod-npm-minor
           orb-name: sugarshin/npm
           release: minor
           ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
@@ -47,7 +47,7 @@ workflows:
             tags:
               only: /master-minor.*/
       - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-npm-patch
+          name: dev-promote-prod-npm-major
           orb-name: sugarshin/npm
           release: major
           ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
