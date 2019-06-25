@@ -85,7 +85,7 @@ steps:
           exit 0
         fi
 
-        readonly versions=$(npx ${latest_published_version} ${version})
+        readonly versions=$(npx semver ${latest_published_version} ${version})
         readonly first=$(echo ${versions} | cut -d ' ' -f 1)
         if [[ "$first" = "$latest_published_version" ]]; then
           npm publish << parameters.flags >>
