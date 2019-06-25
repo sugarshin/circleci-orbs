@@ -85,7 +85,9 @@ steps:
           exit 0
         fi
 
-        if [[ versions=$(npx ${latest_published_version} ${version}); first=$(echo ${versions} | cut -d ' ' -f 1); "$first" = "$latest_published_version" ]]; then
+        readonly versions=$(npx ${latest_published_version} ${version})
+        readonly first=$(echo ${versions} | cut -d ' ' -f 1)
+        if [[ "$first" = "$latest_published_version" ]]; then
           npm publish << parameters.flags >>
 
           <<# parameters.tagging >>
