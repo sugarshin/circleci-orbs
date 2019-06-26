@@ -1,0 +1,5 @@
+description: >
+  Default executor, with Docker circleci/buildpack-deps:latest
+
+docker:
+  - image: circleci/buildpack-deps:latest

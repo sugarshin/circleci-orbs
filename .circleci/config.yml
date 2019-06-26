@@ -7,6 +7,8 @@ workflows:
   lint_pack_publish-dev:
     jobs:
       - orb-tools/lint
+
+      # npm
       - orb-tools/pack:
           name: pack-npm
           source-dir: src/npm
@@ -49,6 +51,57 @@ workflows:
       - orb-tools/dev-promote-prod:
           name: dev-promote-prod-npm-major
           orb-name: sugarshin/npm
+          release: major
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-major.*/
+
+      # gh-pages
+      - orb-tools/pack:
+          name: pack-gh-pages
+          source-dir: src/gh-pages
+          destination-orb-path: packed/gh-pages/orb.yml
+          workspace-path: packed/gh-pages/orb.yml
+          artifact-path: packed/gh-pages/orb.yml
+          requires:
+            - orb-tools/lint
+      - orb-tools/publish-dev:
+          name: publish-dev-gh-pages
+          orb-name: sugarshin/gh-pages
+          orb-path: workspace/packed/gh-pages/orb.yml
+          requires:
+            - pack-gh-pages
+      - orb-tools/trigger-integration-workflow:
+          name: trigger-integration-workflow-gh-pages
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
+          requires:
+            - publish-dev-gh-pages
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-prod-gh-pages-patch
+          orb-name: sugarshin/gh-pages
+          release: patch
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-patch.*/
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-prod-gh-pages-minor
+          orb-name: sugarshin/gh-pages
+          release: minor
+          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-minor.*/
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-prod-gh-pages-major
+          orb-name: sugarshin/gh-pages
           release: major
           ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
           filters:
