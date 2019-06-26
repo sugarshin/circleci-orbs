@@ -1,0 +1,99 @@
+description: Deploy assets to GitHub Pages.
+
+parameters:
+  executor:
+    description: executor to use for this job
+    type: executor
+    default: default
+  checkout:
+    description: >
+      Boolean for whether or not to checkout as a first step. Default is true.
+    type: boolean
+    default: true
+  attach-workspace:
+    description: >
+      Boolean for whether or not to attach to an existing workspace. Default
+      is false.
+    type: boolean
+    default: false
+  persist-to-workspace:
+    description: >
+      Boolean for whether or not to persist to a workspace. Default
+      is false.
+    type: boolean
+    default: false
+  workspace-root:
+    description: >
+      Workspace root path that is either an absolute path or a path relative
+      to the working directory. Defaults to '~/repo'
+    type: string
+    default: ~/repo
+  project-username:
+    description: project username. default $CIRCLE_PROJECT_USERNAME
+    type: string
+    default: ""
+  project-reponame:
+    description: project reponame. default $CIRCLE_PROJECT_REPONAME
+    type: string
+    default: ""
+  commit-message:
+    description: commit message. default "Built artifacts of ${commit} [ci skip]"
+    type: string
+    default: ""
+  build-dir:
+    description: build directory
+    type: string
+    default: "dist"
+  ssh-fingerprints:
+    type: string
+    default: ""
+    description: >
+      Fingerprints for SSH deploy key (add the public key as a read/write
+      key on GitHub; add the private key in CircleCI via SSH Permissions,
+      with github.com as Hostname). Used to push a git tag back to the
+      project's repository.
+
+executor: << parameters.executor >>
+
+steps:
+  - when:
+      condition: << parameters.checkout >>
+      steps:
+        - checkout
+  - when:
+      condition: << parameters.attach-workspace >>
+      steps:
+        - attach_workspace:
+            at: << parameters.workspace-root >>
+  - add_ssh_keys:
+      fingerprints:
+        - << parameters.ssh-fingerprints >>
+  - run:
+      name: Deploy to GitHub Pages
+      command: |
+        readonly username=<< parameters.project-username >>
+        readonly reponame=<< parameters.project-reponame >>
+        readonly git_url=git@github.com:${username:-$CIRCLE_PROJECT_USERNAME}/${reponame:-$CIRCLE_PROJECT_REPONAME}.git
+        readonly branch=gh-pages
+        readonly commit=$(git rev-parse --short HEAD)
+        readonly commit_message=<< parameters.commit-message >>
+        readonly default_commit_message="Built artifacts of ${commit} [ci skip]"
+        readonly message=${commit_message:-$default_commit_message}
+        readonly dist=<< parameters.build-dir >>
+        readonly dir=.deploy
+
+        rm -rf $dir
+        git clone --depth=1 $git_url -b $branch $dir || (git init $dir && cd $dir && git remote add origin $git_url && git checkout -b $branch)
+        rm -rf ${dir}/*
+        cp -R ${dir}/../${dist}/. $dir
+        cd $dir
+        git add --all
+        git commit -m $message || true
+        git push origin $branch
+  - when:
+      condition: << parameters.persist-to-workspace >>
+      steps:
+        - persist_to_workspace:
+            root: << parameters.workspace-root >>
+            paths:
+              - .
