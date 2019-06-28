@@ -10,6 +10,7 @@ orbs:
 
 executors:
   circleci_cli:
+    working_directory: *workspace-root
     docker:
       - image: circleci/circleci-cli:0.1.5705
         environment:
@@ -25,7 +26,8 @@ jobs:
         default: DIST_DIR
     steps:
       - checkout
-      - circle-compare-url/reconstruct
+      - circle-compare-url/reconstruct:
+          project-path: *workspace-root
       - run:
           shell: /bin/bash -exo pipefail
           command: |
@@ -71,7 +73,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: *workspace-root
-      - circle-compare-url/reconstruct
+      - circle-compare-url/reconstruct:
+          project-path: *workspace-root
       - run:
           shell: /bin/bash -exo pipefail
           command: |
