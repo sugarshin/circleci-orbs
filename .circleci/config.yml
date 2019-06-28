@@ -74,7 +74,7 @@ jobs:
 
             for ORB in ${SRC_DIR}/*/; do
               orbname=$(basename $ORB)
-              namespace=sugrshin/${orbname}
+              namespace=sugarshin/${orbname}
 
               set +e
               result=$(circleci orb info $namespace)
