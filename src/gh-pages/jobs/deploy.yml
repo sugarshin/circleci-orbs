@@ -13,9 +13,9 @@ parameters:
   attach-workspace:
     description: >
       Boolean for whether or not to attach to an existing workspace. Default
-      is false.
+      is true.
     type: boolean
-    default: false
+    default: true
   persist-to-workspace:
     description: >
       Boolean for whether or not to persist to a workspace. Default
