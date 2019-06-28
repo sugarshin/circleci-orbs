@@ -29,7 +29,7 @@ jobs:
       - circle-compare-url/reconstruct:
           project-path: *workspace-root
       - run:
-          shell: /bin/bash -exo pipefail
+          shell: /bin/bash -euo pipefail
           command: |
             CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
             COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
@@ -41,7 +41,7 @@ jobs:
             for ORB in ${SRC_DIR}/*/; do
               orbname=$(basename $ORB)
               if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
-                namespace=sugrshin/${orbname}
+                namespace=sugarshin/${orbname}
 
                 set +e
                 result=$(circleci orb info $namespace)
@@ -76,7 +76,7 @@ jobs:
       - circle-compare-url/reconstruct:
           project-path: *workspace-root
       - run:
-          shell: /bin/bash -exo pipefail
+          shell: /bin/bash -euo pipefail
           command: |
             CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
             COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
@@ -85,6 +85,17 @@ jobs:
 
             for ORB in ${SRC_DIR}/*/; do
               orbname=$(basename $ORB)
+              namespace=sugrshin/${orbname}
+
+              set +e
+              result=$(circleci orb info $namespace)
+              set -e
+
+              if [[ $result = "" ]]; then
+                echo "Create new Orb:"
+                circleci orb create $namespace --no-prompt
+              fi
+
               if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
                 (ls ${DIST_DIR}/${ORB}orb.yml && echo "orb.yml found, attempting to publish...") || echo "No orb.yml file was found - the next line is expected to fail."
                 circleci orb publish ${DIST_DIR}/${ORB}orb.yml sugarshin/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
@@ -100,7 +111,7 @@ jobs:
       - checkout
       - circle-compare-url/reconstruct
       - run:
-          shell: /bin/bash -exo pipefail
+          shell: /bin/bash -euo pipefail
           command: |
             CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
             COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')

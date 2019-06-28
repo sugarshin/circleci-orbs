@@ -2,7 +2,7 @@ description: Deploy assets to GitHub Pages.
 
 parameters:
   executor:
-    description: executor to use for this job
+    description: Executor to use for this job
     type: executor
     default: default
   checkout:
@@ -29,21 +29,21 @@ parameters:
     type: string
     default: ~/repo
   project-username:
-    description: project username. default CIRCLE_PROJECT_USERNAME
+    description: Project username. default CIRCLE_PROJECT_USERNAME
     type: string
     default: ""
   project-reponame:
-    description: project reponame. default CIRCLE_PROJECT_REPONAME
+    description: Project reponame. default CIRCLE_PROJECT_REPONAME
     type: string
     default: ""
   commit-message:
-    description: commit message. default "Built artifacts of ${commit} [ci skip]"
+    description: Commit message. default "Built artifacts of ${commit} [ci skip]"
     type: string
     default: ""
   build-dir:
-    description: build directory
+    description: Target directory
     type: string
-    default: "dist"
+    default: dist
   ssh-fingerprints:
     type: string
     default: ""
