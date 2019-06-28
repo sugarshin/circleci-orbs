@@ -49,8 +49,7 @@ jobs:
 
                 if [[ $result = "" ]]; then
                   echo "Create new Orb:"
-                  echo -e "token: ${CIRCLE_TOKEN}\nhost: https://circleci.com\nendpoint: graphql-unstable" > ~/.circleci/cli.yml
-                  circleci orb create $namespace
+                  circleci orb create $namespace --no-prompt
                 fi
 
                 orbpath=${DIST_DIR}/${orbname}/orb.yml

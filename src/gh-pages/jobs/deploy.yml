@@ -29,11 +29,11 @@ parameters:
     type: string
     default: ~/repo
   project-username:
-    description: project username. default $CIRCLE_PROJECT_USERNAME
+    description: project username. default CIRCLE_PROJECT_USERNAME
     type: string
     default: ""
   project-reponame:
-    description: project reponame. default $CIRCLE_PROJECT_REPONAME
+    description: project reponame. default CIRCLE_PROJECT_REPONAME
     type: string
     default: ""
   commit-message:
