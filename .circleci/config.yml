@@ -47,7 +47,7 @@ jobs:
                 result=$(circleci orb info $namespace)
                 set -e
 
-                if [[ $result = "" ]]; then
+                if [[ -z $result ]]; then
                   echo "Create new Orb:"
                   circleci orb create $namespace --no-prompt
                 fi

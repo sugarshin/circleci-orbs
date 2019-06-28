@@ -7,7 +7,7 @@ parameters:
     default: default
   checkout:
     description: >
-      Boolean for whether or not to checkout as a first step. Default is true.
+      Boolean for whether or not to checkout as a first step. Default is true
     type: boolean
     default: true
   attach-workspace:
