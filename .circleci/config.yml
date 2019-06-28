@@ -49,7 +49,7 @@ jobs:
 
                 if [[ $result = "" ]]; then
                   echo "Create new Orb:"
-                  circleci orb create $namespace
+                  circleci orb create $namespace --token $CIRCLE_TOKEN
                 fi
 
                 orbpath=${DIST_DIR}/${orbname}/orb.yml
