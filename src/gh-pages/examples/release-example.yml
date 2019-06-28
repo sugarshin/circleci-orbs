@@ -13,6 +13,3 @@ usage:
             build-dir: build
             attach-workspace: true
             ssh-fingerprints: ff:22:gs:v6:gg:2g:22:7j:73:gf:ja:36:ff:y2:22:89
-            requires:
-              - test
-              - build
