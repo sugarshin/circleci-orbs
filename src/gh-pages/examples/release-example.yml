@@ -7,7 +7,7 @@ usage:
     gh-pages: sugarshin/gh-pages@x.y.z
 
   workflows:
-    test_build_deploy:
+    build_deploy:
       jobs:
         - build
         - gh-pages/deploy:
