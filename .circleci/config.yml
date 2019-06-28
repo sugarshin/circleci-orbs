@@ -34,7 +34,7 @@ jobs:
 
             echo "Commit range: $COMMIT_RANGE"
 
-            mkdir -pv << parameters.dist-dir >>
+            mkdir -pv $<< parameters.dist-dir >>
 
             for ORB in ${SRC_DIR}/*/; do
               orbname=$(basename $ORB)
