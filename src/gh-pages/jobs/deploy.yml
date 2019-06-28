@@ -71,25 +71,25 @@ steps:
   - run:
       name: Deploy to GitHub Pages
       command: |
-        readonly username=<< parameters.project-username >>
-        readonly reponame=<< parameters.project-reponame >>
-        readonly git_url=git@github.com:${username:-$CIRCLE_PROJECT_USERNAME}/${reponame:-$CIRCLE_PROJECT_REPONAME}.git
-        readonly branch=gh-pages
-        readonly commit=$(git rev-parse --short HEAD)
-        readonly commit_message=<< parameters.commit-message >>
-        readonly default_commit_message="Built artifacts of ${commit} [ci skip]"
-        readonly message=${commit_message:-$default_commit_message}
-        readonly dist=<< parameters.build-dir >>
-        readonly dir=.deploy
+        readonly USERNAME=<< parameters.project-username >>
+        readonly REPONAME=<< parameters.project-reponame >>
+        readonly GIT_URL=git@github.com:${USERNAME:-$CIRCLE_PROJECT_USERNAME}/${REPONAME:-$CIRCLE_PROJECT_REPONAME}.git
+        readonly BRANCH=gh-pages
+        readonly COMMIT=$(git rev-parse --short HEAD)
+        readonly COMMIT_MESSAGE=<< parameters.commit-message >>
+        readonly DEFAULT_COMMIT_MESSAGE="Built artifacts of ${COMMIT} [ci skip]"
+        readonly MESSAGE=${COMMIT_MESSAGE:-$DEFAULT_COMMIT_MESSAGE}
+        readonly DIST=<< parameters.build-dir >>
+        readonly DIR=.deploy
 
-        rm -rf $dir
-        git clone --depth=1 $git_url -b $branch $dir || (git init $dir && cd $dir && git remote add origin $git_url && git checkout -b $branch)
-        rm -rf ${dir}/*
-        cp -R ${dir}/../${dist}/. $dir
-        cd $dir
+        rm -rf $DIR
+        git clone --depth=1 $GIT_URL -b $BRANCH $DIR || (git init $DIR && cd $DIR && git remote add origin $GIT_URL && git checkout -b $BRANCH)
+        rm -rf ${DIR}/*
+        cp -R ${DIR}/../${DIST}/. $DIR
+        cd $DIR
         git add --all
-        git commit -m $message || true
-        git push origin $branch
+        git commit -m $MESSAGE || true
+        git push origin $BRANCH
   - when:
       condition: << parameters.persist-to-workspace >>
       steps:

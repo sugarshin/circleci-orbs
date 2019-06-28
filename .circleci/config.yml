@@ -1,111 +1,134 @@
 version: 2.1
 
+refs:
+  workspace-root: &workspace-root
+    ~/repo
+
 orbs:
   orb-tools: circleci/orb-tools@8.27.1
+  circle-compare-url: iynere/compare-url@1.2.0
+
+executors:
+  circleci_cli:
+    working_directory: *workspace-root
+    docker:
+      - image: circleci/circleci-cli:0.1.5705
+        environment:
+          SRC_DIR: src
+          DIST_DIR: packed
+
+jobs:
+  pack:
+    executor: circleci_cli
+    parameters:
+      dist-dir:
+        type: env_var_name
+        default: DIST_DIR
+    steps:
+      - checkout
+      - circle-compare-url/reconstruct:
+          project-path: *workspace-root
+      - run:
+          shell: /bin/bash -exo pipefail
+          command: |
+            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+
+            echo "Commit range: $COMMIT_RANGE"
+
+            mkdir -pv $<< parameters.dist-dir >>
+
+            for ORB in ${SRC_DIR}/*/; do
+              orbname=$(basename $ORB)
+              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
+                namespace=sugrshin/${orbname}
+
+                set +e
+                result=$(circleci orb info $namespace)
+                set -e
+
+                if [[ $result = "" ]]; then
+                  echo "Create new Orb:"
+                  circleci orb create $namespace
+                fi
+
+                orbpath=${DIST_DIR}/${orbname}/orb.yml
+                mkdir -pv $(dirname $orbpath)
+                circleci config pack ${SRC_DIR}/${orbname} > ${orbpath}
+                circleci orb validate ${orbpath}
+              else
+                echo "${orbname} not modified; no need to packing"
+              fi
+
+              echo "------------------------------------------------------"
+            done
+      - persist_to_workspace:
+          root: *workspace-root
+          paths:
+            - << parameters.dist-dir >>
+
+  release_dev:
+    executor: circleci_cli
+    steps:
+      - checkout
+      - attach_workspace:
+          at: *workspace-root
+      - circle-compare-url/reconstruct:
+          project-path: *workspace-root
+      - run:
+          shell: /bin/bash -exo pipefail
+          command: |
+            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+
+            echo "Commit range: $COMMIT_RANGE"
+
+            for ORB in ${SRC_DIR}/*/; do
+              orbname=$(basename $ORB)
+              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
+                (ls ${DIST_DIR}/${ORB}orb.yml && echo "orb.yml found, attempting to publish...") || echo "No orb.yml file was found - the next line is expected to fail."
+                circleci orb publish ${DIST_DIR}/${ORB}orb.yml sugarshin/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+              else
+                echo "${orbname} not modified; no need to promote"
+              fi
+              echo "------------------------------------------------------"
+            done
+
+  dev_promote_prod_patch:
+    executor: circleci_cli
+    steps:
+      - checkout
+      - circle-compare-url/reconstruct
+      - run:
+          shell: /bin/bash -exo pipefail
+          command: |
+            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+            echo "Commit range: $COMMIT_RANGE"
+            for ORB in ${SRC_DIR}/*/; do
+              orbname=$(basename $ORB)
+              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
+                echo "promoting sugarshin/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7} as patch release"
+                circleci orb publish promote sugarshin/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+              else
+                echo "${orbname} not modified; no need to promote"
+              fi
+              echo "------------------------------------------------------"
+            done
 
 workflows:
-  lint_pack_publish-dev:
+  lint_pack_publish-dev_promote-prod:
     jobs:
-      - orb-tools/lint
-
-      # npm
-      - orb-tools/pack:
-          name: pack-npm
-          source-dir: src/npm
-          destination-orb-path: packed/npm/orb.yml
-          workspace-path: packed/npm/orb.yml
-          artifact-path: packed/npm/orb.yml
+      - orb-tools/lint:
+          lint-dir: src
+      - pack
+      - release_dev:
           requires:
             - orb-tools/lint
-      - orb-tools/publish-dev:
-          name: publish-dev-npm
-          orb-name: sugarshin/npm
-          orb-path: workspace/packed/npm/orb.yml
+            - pack
+      - dev_promote_prod_patch:
           requires:
-            - pack-npm
-      - orb-tools/trigger-integration-workflow:
-          name: trigger-integration-workflow-npm
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          requires:
-            - publish-dev-npm
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-npm-patch
-          orb-name: sugarshin/npm
-          release: patch
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
+            - release_dev
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /master-patch.*/
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-npm-minor
-          orb-name: sugarshin/npm
-          release: minor
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-minor.*/
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-npm-major
-          orb-name: sugarshin/npm
-          release: major
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-major.*/
-
-      # gh-pages
-      - orb-tools/pack:
-          name: pack-gh-pages
-          source-dir: src/gh-pages
-          destination-orb-path: packed/gh-pages/orb.yml
-          workspace-path: packed/gh-pages/orb.yml
-          artifact-path: packed/gh-pages/orb.yml
-          requires:
-            - orb-tools/lint
-      - orb-tools/publish-dev:
-          name: publish-dev-gh-pages
-          orb-name: sugarshin/gh-pages
-          orb-path: workspace/packed/gh-pages/orb.yml
-          requires:
-            - pack-gh-pages
-      - orb-tools/trigger-integration-workflow:
-          name: trigger-integration-workflow-gh-pages
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          requires:
-            - publish-dev-gh-pages
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-gh-pages-patch
-          orb-name: sugarshin/gh-pages
-          release: patch
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-patch.*/
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-gh-pages-minor
-          orb-name: sugarshin/gh-pages
-          release: minor
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-minor.*/
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-prod-gh-pages-major
-          orb-name: sugarshin/gh-pages
-          release: major
-          ssh-fingerprints: 84:ce:ef:5a:1a:c2:65:df:54:80:ad:80:d7:7f:50:47
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-major.*/
+              only: master
