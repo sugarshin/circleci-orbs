@@ -19,7 +19,7 @@ parameters:
   persist-to-workspace:
     description: >
       Boolean for whether or not to persist to a workspace. Default
-      is false.
+      is false
     type: boolean
     default: false
   workspace-root:

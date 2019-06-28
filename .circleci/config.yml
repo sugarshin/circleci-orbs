@@ -41,17 +41,6 @@ jobs:
             for ORB in ${SRC_DIR}/*/; do
               orbname=$(basename $ORB)
               if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
-                namespace=sugarshin/${orbname}
-
-                set +e
-                result=$(circleci orb info $namespace)
-                set -e
-
-                if [[ -z $result ]]; then
-                  echo "Create new Orb:"
-                  circleci orb create $namespace --no-prompt
-                fi
-
                 orbpath=${DIST_DIR}/${orbname}/orb.yml
                 mkdir -pv $(dirname $orbpath)
                 circleci config pack ${SRC_DIR}/${orbname} > ${orbpath}
@@ -91,9 +80,9 @@ jobs:
               result=$(circleci orb info $namespace)
               set -e
 
-              if [[ $result = "" ]]; then
+              if [[ -z $result ]]; then
                 echo "Create new Orb:"
-                circleci orb create $namespace --no-prompt
+                circleci orb create $namespace --no-prompt --token $CIRCLE_TOKEN
               fi
 
               if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
