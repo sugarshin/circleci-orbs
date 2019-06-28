@@ -82,7 +82,7 @@ jobs:
 
               if [[ -z $result ]]; then
                 echo "Create new Orb:"
-                circleci orb create $namespace --no-prompt --token $CIRCLE_TOKEN
+                (circleci orb create $namespace --no-prompt --token $CIRCLE_TOKEN) || echo "${namespace} already creaed."
               fi
 
               if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then

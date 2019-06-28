@@ -1,4 +1,4 @@
-description: Deploy assets to GitHub Pages.
+description: Deploy assets to GitHub Pages
 
 parameters:
   executor:
