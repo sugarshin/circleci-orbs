@@ -1,0 +1,20 @@
+description: >
+  Example for deploy using job
+usage:
+  version: 2.1
+
+  orbs:
+    gh-pages: sugarshin/gh-pages@x.y.z
+
+  jobs:
+    deploy_ghpages:
+      steps:
+        - checkout
+        - run: bash build.sh
+        - gh-pages/deploy:
+            ssh-fingerprints: ff:22:gs:v6:gg:2g:22:7j:73:gf:ja:36:ff:y2:22:89
+
+  workflows:
+    build_deploy:
+      jobs:
+        - deploy_ghpages
