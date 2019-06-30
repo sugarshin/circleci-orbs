@@ -6,7 +6,13 @@ usage:
   orbs:
     gh-pages: sugarshin/gh-pages@x.y.z
 
+  executors:
+    buildpack_deps:
+      docker:
+        - image: circleci/buildpack-deps
+
   jobs:
+    executor: buildpack_deps
     deploy_ghpages:
       steps:
         - checkout

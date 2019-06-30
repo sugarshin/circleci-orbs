@@ -28,6 +28,18 @@ parameters:
       to the working directory. Defaults to '~/repo'
     type: string
     default: ~/repo
+  setup-git:
+    description: Setting Git username and email
+    type: boolean
+    default: true
+  git-user:
+    description: Git username. Default is "${CIRCLE_USERNAME}"
+    type: string
+    default: ""
+  git-email:
+    description: Git email. Default is "${CIRCLE_USERNAME}@users.noreply.github.com"
+    type: string
+    default: ""
   project-username:
     description: Project username. default CIRCLE_PROJECT_USERNAME
     type: string
@@ -44,6 +56,10 @@ parameters:
     description: Target directory
     type: string
     default: dist
+  tmp-dir:
+    description: A directory created temporarily for deployment
+    type: string
+    default: .deploy
   ssh-fingerprints:
     type: string
     default: ""
@@ -64,6 +80,9 @@ steps:
       attach-workspace: << parameters.attach-workspace >>
       persist-to-workspace: << parameters.persist-to-workspace >>
       workspace-root: << parameters.workspace-root >>
+      setup-git: << parameters.setup-git >>
+      git-user: << parameters.git-user >>
+      git-email: << parameters.git-email >>
       project-username: << parameters.project-username >>
       project-reponame: << parameters.project-reponame >>
       commit-message: << parameters.commit-message >>

@@ -40,6 +40,18 @@ parameters:
     description: A directory created temporarily for deployment
     type: string
     default: .deploy
+  setup-git:
+    description: Setting Git username and email
+    type: boolean
+    default: true
+  git-user:
+    description: Git username. Default is "${CIRCLE_USERNAME}"
+    type: string
+    default: ""
+  git-email:
+    description: Git email. Default is "${CIRCLE_USERNAME}@users.noreply.github.com"
+    type: string
+    default: ""
   ssh-fingerprints:
     type: string
     default: ""
@@ -62,6 +74,18 @@ steps:
         - add_ssh_keys:
             fingerprints:
               - << parameters.ssh-fingerprints >>
+
+  - when:
+      condition: << parameters.setup-git >>
+      steps:
+        - run:
+            command: |
+              NAME=<< parameters.git-user >>
+              EMAIL=<< parameters.git-email >>
+              GIT_USER=${NAME:-$CIRCLE_USERNAME}
+              GIT_EMAIL=${EMAIL:-"${CIRCLE_USERNAME}@users.noreply.github.com"}
+              git config --global user.name $GIT_USER
+              git config --global user.email $GIT_EMAIL
 
   - run:
       name: Deploy to GitHub Pages
