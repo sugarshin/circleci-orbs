@@ -107,7 +107,7 @@ steps:
         cp -R ${DIR}/../${DIST}/. $DIR
         cd $DIR
         git add --all
-        git commit -m $MESSAGE || true
+        git commit -m "${MESSAGE}" || true
         git push origin $BRANCH
 
   - when:
