@@ -12,8 +12,8 @@ usage:
         - image: circleci/buildpack-deps
 
   jobs:
-    executor: buildpack_deps
     deploy_ghpages:
+      executor: buildpack_deps
       steps:
         - checkout
         - run: bash build.sh
