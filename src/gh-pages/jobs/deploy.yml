@@ -28,6 +28,18 @@ parameters:
       to the working directory. Defaults to '~/repo'
     type: string
     default: ~/repo
+  setup-git:
+    description: Setting Git username and email
+    type: boolean
+    default: true
+  git-user:
+    description: Git username. Default is "${CIRCLE_USERNAME}"
+    type: string
+    default: ""
+  git-email:
+    description: Git email. Default is "${CIRCLE_USERNAME}@users.noreply.github.com"
+    type: string
+    default: ""
   project-username:
     description: Project username. default CIRCLE_PROJECT_USERNAME
     type: string
@@ -44,6 +56,10 @@ parameters:
     description: Target directory
     type: string
     default: dist
+  tmp-dir:
+    description: A directory created temporarily for deployment
+    type: string
+    default: .deploy
   ssh-fingerprints:
     type: string
     default: ""
@@ -60,40 +76,16 @@ steps:
       condition: << parameters.checkout >>
       steps:
         - checkout
-  - when:
-      condition: << parameters.attach-workspace >>
-      steps:
-        - attach_workspace:
-            at: << parameters.workspace-root >>
-  - add_ssh_keys:
-      fingerprints:
-        - << parameters.ssh-fingerprints >>
-  - run:
-      name: Deploy to GitHub Pages
-      command: |
-        readonly USERNAME=<< parameters.project-username >>
-        readonly REPONAME=<< parameters.project-reponame >>
-        readonly GIT_URL=git@github.com:${USERNAME:-$CIRCLE_PROJECT_USERNAME}/${REPONAME:-$CIRCLE_PROJECT_REPONAME}.git
-        readonly BRANCH=gh-pages
-        readonly COMMIT=$(git rev-parse --short HEAD)
-        readonly COMMIT_MESSAGE=<< parameters.commit-message >>
-        readonly DEFAULT_COMMIT_MESSAGE="Built artifacts of ${COMMIT} [ci skip]"
-        readonly MESSAGE=${COMMIT_MESSAGE:-$DEFAULT_COMMIT_MESSAGE}
-        readonly DIST=<< parameters.build-dir >>
-        readonly DIR=.deploy
-
-        rm -rf $DIR
-        git clone --depth=1 $GIT_URL -b $BRANCH $DIR || (git init $DIR && cd $DIR && git remote add origin $GIT_URL && git checkout -b $BRANCH)
-        rm -rf ${DIR}/*
-        cp -R ${DIR}/../${DIST}/. $DIR
-        cd $DIR
-        git add --all
-        git commit -m $MESSAGE || true
-        git push origin $BRANCH
-  - when:
-      condition: << parameters.persist-to-workspace >>
-      steps:
-        - persist_to_workspace:
-            root: << parameters.workspace-root >>
-            paths:
-              - .
+  - deploy:
+      attach-workspace: << parameters.attach-workspace >>
+      persist-to-workspace: << parameters.persist-to-workspace >>
+      workspace-root: << parameters.workspace-root >>
+      setup-git: << parameters.setup-git >>
+      git-user: << parameters.git-user >>
+      git-email: << parameters.git-email >>
+      project-username: << parameters.project-username >>
+      project-reponame: << parameters.project-reponame >>
+      commit-message: << parameters.commit-message >>
+      build-dir: << parameters.build-dir >>
+      tmp-dir: << parameters.tmp-dir >>
+      ssh-fingerprints: << parameters.ssh-fingerprints >>
