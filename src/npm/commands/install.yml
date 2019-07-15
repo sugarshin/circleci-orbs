@@ -14,28 +14,51 @@ parameters:
     description: "save_cache"
     type: boolean
     default: true
-  cache-checksum:
-    description: "cache checksum"
+  cache-key:
+    description: "custom cache key"
     type: string
-    default: "package-lock.json"
+    default: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}'
+  yarn:
+    description: "Use yarn instead of npm"
+    type: boolean
+    default: false
 
 steps:
   - when:
       condition: << parameters.restore-cache >>
       steps:
         - restore_cache:
-            name: Restore npm cache
+            name: Restore cache
             keys:
-              - npm-cache-{{ checksum "<< parameters.cache-checksum >>" }}
-              - npm-cache-
-  - run:
-      name: Install npm modules
-      command: npm ci <<# parameters.production >>--production<</ parameters.production >>
+              - << parameters.cache-key >>
   - when:
-      condition: << parameters.save-cache >>
+      condition: << parameters.yarn >>
       steps:
-        - save_cache:
-            name: Save npm cache
-            key: npm-cache-{{ checksum "<< parameters.cache-checksum >>" }}
-            paths:
-              - ~/.npm
+        - run:
+            name: Yarn install
+            command: yarn install --frozen-lockfile <<# parameters.production >>--prod<</ parameters.production >>
+  - unless:
+      condition: << parameters.yarn >>
+      steps:
+        - run:
+            name: npm ci
+            command: npm ci <<# parameters.production >>--production<</ parameters.production >>
+  - when:
+      steps:
+        - when:
+            condition: << parameters.yarn >>
+            steps:
+              - save_cache:
+                  name: Save Yarn cache
+                  key: << parameters.cache-key >>
+                  paths:
+                    - ~/.cache
+        - unless:
+            condition: << parameters.yarn >>
+            steps:
+              - save_cache:
+                  name: Save npm cache
+                  key: << parameters.cache-key >>
+                  paths:
+                    - ~/.npm
+                    - ~/.cache
