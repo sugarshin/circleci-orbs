@@ -44,6 +44,7 @@ steps:
             name: npm ci
             command: npm ci <<# parameters.production >>--production<</ parameters.production >>
   - when:
+      condition: << parameters.save-cache >>
       steps:
         - when:
             condition: << parameters.yarn >>
@@ -52,7 +53,7 @@ steps:
                   name: Save Yarn cache
                   key: << parameters.cache-key >>
                   paths:
-                    - ~/.cache
+                    - ~/.cache/yarn
         - unless:
             condition: << parameters.yarn >>
             steps:
@@ -61,4 +62,3 @@ steps:
                   key: << parameters.cache-key >>
                   paths:
                     - ~/.npm
-                    - ~/.cache
