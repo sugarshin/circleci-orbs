@@ -29,7 +29,7 @@ parameters:
     type: string
     default: ""
   commit-message:
-    description: Commit message. default "Built artifacts of ${commit_hash}"
+    description: Commit message. default "Built artifacts of ${commit_hash} [ci skip]"
     type: string
     default: ""
   build-dir:
@@ -96,7 +96,7 @@ steps:
         readonly BRANCH=gh-pages
         readonly COMMIT=$(git rev-parse --short HEAD)
         readonly COMMIT_MESSAGE=<< parameters.commit-message >>
-        readonly DEFAULT_COMMIT_MESSAGE="Built artifacts of ${COMMIT}"
+        readonly DEFAULT_COMMIT_MESSAGE="Built artifacts of ${COMMIT} [ci skip]"
         readonly MESSAGE=${COMMIT_MESSAGE:-$DEFAULT_COMMIT_MESSAGE}
         readonly DIST=<< parameters.build-dir >>
         readonly DIR=<< parameters.tmp-dir >>
