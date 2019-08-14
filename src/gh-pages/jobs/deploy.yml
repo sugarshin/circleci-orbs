@@ -49,7 +49,7 @@ parameters:
     type: string
     default: ""
   commit-message:
-    description: Commit message. default "Built artifacts of ${commit_hash} [ci skip]"
+    description: Commit message. default "Built artifacts of ${commit_hash}"
     type: string
     default: ""
   build-dir:
