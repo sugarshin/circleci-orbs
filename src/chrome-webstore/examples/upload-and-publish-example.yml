@@ -1,0 +1,44 @@
+description: >
+  Example using for publish
+usage:
+  version: 2.1
+
+  orbs:
+    cws: sugarshin/chrome-webstore@x.y.z
+
+  executors:
+    nodejs:
+      docker:
+        - image: circleci/node:12.11.0
+      working_directory: ~/repo
+
+  jobs:
+    build:
+      executor: nodejs
+      steps:
+        - checkout
+        - run: zip extension -r src
+        - persist_to_workspace:
+            root: ~/repo
+            paths:
+              - extension.zip
+
+  workflows:
+    test_build_publish:
+      jobs:
+        - test
+        - build
+        - cws/upload:
+            executor: nodejs
+            checkout: false
+            attach-workspace: true
+            source: extension.zip
+            extension-id: <extension-id> # extension-id
+            client-id: <client-id> # client-id
+            client-secret: <client-secret> # client-secret
+            refresh-token: <refresh-token> # refresh-token
+            auto-publish: true
+            workspace-root: ~/repo
+            requires:
+              - test
+              - build

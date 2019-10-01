@@ -1,0 +1,5 @@
+version: 2.1
+
+description: |
+  A Chrome Web Store Manager. Source:
+  https://github.com/sugarshin/circleci-orbs

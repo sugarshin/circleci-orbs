@@ -1,0 +1,19 @@
+description: >
+  Publish A Extension
+
+parameters:
+  extension-id:
+    description: "ID of the Extension"
+    type: string
+  trusted-testers:
+    description: "Set publishTarget to `trustedTesters`"
+    type: boolean
+    default: false
+
+steps:
+  - run:
+      name: Publish A Extension
+      command: |
+        $(npm bin)/webstore publish \
+          --extension-id << parameters.extension-id >> \
+          <<# parameters.trusted-testers >>--trusted-testers<</ parameters.trusted-testers >>

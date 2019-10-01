@@ -1,0 +1,22 @@
+description: >
+  Prepare CLI Tool
+
+parameters:
+  yarn:
+    description: "Use yarn instead of npm"
+    type: boolean
+    default: false
+
+steps:
+  - when:
+      condition: << parameters.yarn >>
+      steps:
+        - run:
+            name: Install chrome-webstore-upload-cli
+            command: yarn add chrome-webstore-upload-cli --frozen-lockfile
+  - unless:
+      condition: << parameters.yarn >>
+      steps:
+        - run:
+            name: Install chrome-webstore-upload-cli
+            command: npm install chrome-webstore-upload-cli --no-save
