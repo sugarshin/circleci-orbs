@@ -1,0 +1,5 @@
+description: >
+  Default executor, with Docker circleci/node:latest
+
+docker:
+  - image: circleci/node:latest

@@ -1,0 +1,89 @@
+description: Upload A Chrome Extensions.
+
+parameters:
+  executor:
+    description: executor to use for this job
+    type: executor
+    default: default
+  checkout:
+    description: >
+      Boolean for whether or not to checkout as a first step. Default is true.
+    type: boolean
+    default: true
+  attach-workspace:
+    description: >
+      Boolean for whether or not to attach to an existing workspace. Default
+      is false.
+    type: boolean
+    default: false
+  construct:
+    description: "Prepare CLI Tool"
+    type: boolean
+    default: true
+  use-yarn:
+    description: "Use yarn instead of npm"
+    type: boolean
+    default: false
+  source:
+    description: "Path to either a zip file"
+    type: string
+  extension-id:
+    description: "ID of the Extension"
+    type: string
+  client-id:
+    description: "OAuth2 Client ID"
+    type: string
+  client-secret:
+    description: "OAuth2 Client Secret"
+    type: string
+  refresh-token:
+    description: "OAuth2 Refresh Token"
+    type: string
+  auto-publish:
+    description: "Automated Publishing"
+    type: boolean
+    default: false
+  persist-to-workspace:
+    description: >
+      Boolean for whether or not to persist to a workspace. Default
+      is false.
+    type: boolean
+    default: false
+  workspace-root:
+    description: >
+      Workspace root path that is either an absolute path or a path relative
+      to the working directory. Defaults to '~/repo'
+    type: string
+    default: ~/repo
+
+executor: << parameters.executor >>
+
+steps:
+  - when:
+      condition: << parameters.checkout >>
+      steps:
+        - checkout
+  - when:
+      condition: << parameters.attach-workspace >>
+      steps:
+        - attach_workspace:
+            at: << parameters.workspace-root >>
+  - when:
+      condition: << parameters.construct >>
+      steps:
+        - construct:
+            yarn: << parameters.use-yarn >>
+  - upload:
+      source: << parameters.source >>
+      extension-id: << parameters.extension-id >>
+      client-id: << parameters.client-id >>
+      client-secret: << parameters.client-secret >>
+      refresh-token: << parameters.refresh-token >>
+      auto-publish: << parameters.auto-publish >>
+  - when:
+      condition: << parameters.persist-to-workspace >>
+      steps:
+        - persist_to_workspace:
+            root: << parameters.workspace-root >>
+            paths:
+              - .

@@ -1,0 +1,35 @@
+description: >
+  Upload A Extension
+
+parameters:
+  source:
+    description: "Path to either a zip file"
+    type: string
+  extension-id:
+    description: "ID of the Extension"
+    type: string
+  client-id:
+    description: "OAuth2 Client ID"
+    type: string
+  client-secret:
+    description: "OAuth2 Client Secret"
+    type: string
+  refresh-token:
+    description: "OAuth2 Refresh Token"
+    type: string
+  auto-publish:
+    description: "Automated Publishing"
+    type: boolean
+    default: false
+
+steps:
+  - run:
+      name: Upload A Extension
+      command: |
+        $(npm bin)/webstore upload \
+          --source << parameters.source >> \
+          --extension-id << parameters.extension-id >> \
+          --client-id << parameters.client-id >> \
+          --client-secret << parameters.client-secret >> \
+          --refresh-token \
+          <<# parameters.auto-publish >>--auto-publish<</ parameters.auto-publish >>
