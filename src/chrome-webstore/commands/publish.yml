@@ -5,6 +5,18 @@ parameters:
   extension-id:
     description: "ID of the Extension"
     type: string
+  client-id:
+    description: "OAuth2 Client ID"
+    type: env_var_name
+    default: CLIENT_ID
+  client-secret:
+    description: "OAuth2 Client Secret"
+    type: env_var_name
+    default: CLIENT_SECRET
+  refresh-token:
+    description: "OAuth2 Refresh Token"
+    type: env_var_name
+    default: REFRESH_TOKEN
   trusted-testers:
     description: "Set publishTarget to `trustedTesters`"
     type: boolean
@@ -16,4 +28,7 @@ steps:
       command: |
         $(npm bin)/webstore publish \
           --extension-id << parameters.extension-id >> \
+          --client-id ${<< parameters.client-id >>} \
+          --client-secret ${<< parameters.client-secret >>} \
+          --refresh-token ${<< parameters.refresh-token >>} \
           <<# parameters.trusted-testers >>--trusted-testers<</ parameters.trusted-testers >>
