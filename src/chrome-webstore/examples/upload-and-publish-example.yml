@@ -33,10 +33,7 @@ usage:
             checkout: false
             attach-workspace: true
             source: extension.zip
-            extension-id: <extension-id> # extension-id
-            client-id: <client-id> # client-id
-            client-secret: <client-secret> # client-secret
-            refresh-token: <refresh-token> # refresh-token
+            extension-id: <extension-id> # Extension ID
             auto-publish: true
             workspace-root: ~/repo
             requires:
