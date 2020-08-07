@@ -22,6 +22,10 @@ parameters:
     description: "Use yarn instead of npm"
     type: boolean
     default: false
+  cache-dir:
+    description: "cache directory"
+    type: string
+    default: '~/.node-packages-cache'
 
 steps:
   - when:
@@ -35,30 +39,25 @@ steps:
       condition: << parameters.yarn >>
       steps:
         - run:
+            name: Configure cache directory
+            command: yarn config set cache-folder << parameters.cache-dir >>
+        - run:
             name: Yarn install
             command: yarn install --frozen-lockfile <<# parameters.production >>--prod<</ parameters.production >>
   - unless:
       condition: << parameters.yarn >>
       steps:
         - run:
+            name: Configure cache directory
+            command: npm config set cache << parameters.cache-dir >> --global
+        - run:
             name: npm ci
             command: npm ci <<# parameters.production >>--production<</ parameters.production >>
   - when:
       condition: << parameters.save-cache >>
       steps:
-        - when:
-            condition: << parameters.yarn >>
-            steps:
-              - save_cache:
-                  name: Save Yarn cache
-                  key: << parameters.cache-key >>
-                  paths:
-                    - ~/.cache/yarn
-        - unless:
-            condition: << parameters.yarn >>
-            steps:
-              - save_cache:
-                  name: Save npm cache
-                  key: << parameters.cache-key >>
-                  paths:
-                    - ~/.npm
+        - save_cache:
+            name: Save packages cache
+            key: << parameters.cache-key >>
+            paths:
+              - << parameters.cache-dir >>
