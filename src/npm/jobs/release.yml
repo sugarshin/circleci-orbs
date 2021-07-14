@@ -76,30 +76,25 @@ steps:
   - run:
       name: Publish a npm module if version bumped up
       command: |
-        readonly package_name=$(node -p "require('./package.json').name")
-        readonly version=$(node -p "require('./package.json').version")
-        readonly latest_published_version=$(npm v ${package_name} version 2>/dev/null)
-
-        if [[ $(npx semver ${version}) == "" ]]; then
-          echo "`version` in package.json is not semver."
+        version=$(node -p "require('./package.json').version")
+        if [[ $(npm_config_yes=true npx semver@7 "${version}") == "" ]]; then
+          echo "\`${version}\` is not a semver."
           exit 0
         fi
 
-        readonly versions=$(npx semver ${latest_published_version} ${version})
-        readonly first=$(echo ${versions} | cut -d ' ' -f 1)
-        if [[ "$version" != "$latest_published_version" ]] && [[ "$first" = "$latest_published_version" ]]; then
+        if npm_config_yes=true npx can-npm-publish@1 --verbose; then
           npm publish << parameters.flags >>
 
           <<# parameters.tagging >>
-          git config --global user.email "$CIRCLE_USERNAME@users.noreply.github.com"
-          git config --global user.name "$CIRCLE_USERNAME"
+          git config --global user.email "${CIRCLE_USERNAME}@users.noreply.github.com"
+          git config --global user.name "${CIRCLE_USERNAME}"
 
-          readonly tag="v${version}"
+          tag="v${version}"
           git tag -a "${tag}" -m "Release ${tag}"
-          git push origin "$tag"
+          git push origin "${tag}"
           <</ parameters.tagging >>
         else
-          echo "${version} exists. It was skip publishing."
+          echo 'publish skipped.'
         fi
   - when:
       condition: << parameters.persist-to-workspace >>
