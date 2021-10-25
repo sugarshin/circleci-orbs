@@ -1,5 +1,0 @@
-version: 2.1
-
-description: |
-  Deploy to GitHub Pages. Source:
-  https://github.com/sugarshin/circleci-orbs

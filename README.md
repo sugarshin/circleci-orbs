@@ -6,6 +6,7 @@ Sources for the [CircleCI Orbs](https://circleci.com/orbs/).
 
 - https://circleci.com/orbs/registry/orb/sugarshin/npm
 - https://circleci.com/orbs/registry/orb/sugarshin/gh-pages
+  - *moved sourcecode to https://github.com/sugarshin/gh-pages-orb*
 - https://circleci.com/orbs/registry/orb/sugarshin/chrome-webstore
 
 ## Publish
