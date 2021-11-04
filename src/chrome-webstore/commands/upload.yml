@@ -29,7 +29,7 @@ steps:
   - run:
       name: Upload A Extension
       command: |
-        $(npm bin)/webstore upload \
+        $(npm bin)/chrome-webstore-upload upload \
           --source << parameters.source >> \
           --extension-id << parameters.extension-id >> \
           --client-id ${<< parameters.client-id >>} \
